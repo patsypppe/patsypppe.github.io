@@ -59,6 +59,12 @@ const og = new URL('/og.png', Astro.site).href
       <main>
         <section id="work">
           <h2>Selected work</h2>
+          <p class="evidence-note">
+            The console blocks below are captures, not illustrations — produced on 24 August 2026 by
+            running each tool against the fixtures committed in its own repository, on a machine
+            with no Docker and no GPU. Where a project's numbers could not be reproduced that way,
+            it says so instead of showing something that looks like output.
+          </p>
           {projects.map((p) => (
             <article class="project">
               <div class="project-head">
@@ -71,6 +77,14 @@ const og = new URL('/og.png', Astro.site).href
               ))}
 
               {p.diagram && <Diagram kind={p.diagram} />}
+
+              {p.transcripts?.map((t) => (
+                <figure class="term">
+                  <div class="term-bar"><span></span><span></span><span></span><em>{t.title}</em></div>
+                  <pre>{t.lines.join('\n')}</pre>
+                  <figcaption>{t.note}</figcaption>
+                </figure>
+              ))}
 
               {p.facts && (
                 <ul class="facts">
