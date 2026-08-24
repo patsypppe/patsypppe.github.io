@@ -1,0 +1,181 @@
+---
+interface Props {
+  kind: 'sentinel' | 'meridian' | 'rideshare'
+}
+const { kind } = Astro.props
+
+const captions: Record<Props['kind'], string> = {
+  sentinel:
+    'What a black-box scan can and cannot settle. Five MUST requirements sit below the line; the harness reports them as INDETERMINATE and the broker covers them with tests that have the access a scan does not.',
+  meridian:
+    'The container is never trusted. State is extracted to the host and the container destroyed before any assertion runs, and the gate reports the smallest regression the run could actually have detected.',
+  rideshare:
+    'Six services behind an HTTP API, a separate WebSocket API for live location. Dashed edges are declared in the repository but not provisioned by the Terraform as it stands.',
+}
+---
+
+<figure class="diagram">
+  {kind === 'sentinel' && (
+    <svg viewBox="0 0 760 400" role="img" aria-label="Sentinel architecture. The sentinel harness sends probes over HTTP to any MCP endpoint and receives responses. From those responses it can settle twenty-five MUST rules and four SHOULD rules, producing pass, fail or not-applicable verdicts. Below a dashed line marked 'not observable from outside' sit five MUST requirements: token audience validated, no token passthrough, handle possession is not authentication, MRTR retries are idempotent, and invocations are audited. The harness marks these INDETERMINATE and excludes them from the gate. The Go broker implements all five and proves each with a named test that has host-side access.">
+      <defs>
+        <marker id="ar-s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" class="d-fill-line" />
+        </marker>
+      </defs>
+
+      <rect x="16" y="24" width="200" height="86" rx="8" class="d-box d-accent" />
+      <text x="116" y="56" text-anchor="middle" class="d-title">sentinel harness</text>
+      <text x="116" y="78" text-anchor="middle" class="d-sub">Python · no server internals</text>
+      <text x="116" y="96" text-anchor="middle" class="d-sub">runs against any URL</text>
+
+      <rect x="544" y="24" width="200" height="86" rx="8" class="d-box" />
+      <text x="644" y="56" text-anchor="middle" class="d-title">any MCP endpoint</text>
+      <text x="644" y="78" text-anchor="middle" class="d-sub">the broker, or someone</text>
+      <text x="644" y="96" text-anchor="middle" class="d-sub">else's unmigrated server</text>
+
+      <line x1="222" y1="55" x2="536" y2="55" class="d-line" marker-end="url(#ar-s)" />
+      <text x="379" y="46" text-anchor="middle" class="d-edge">probe · Mcp-Method / Mcp-Name</text>
+      <line x1="536" y1="88" x2="222" y2="88" class="d-line" marker-end="url(#ar-s)" />
+      <text x="379" y="106" text-anchor="middle" class="d-edge">response</text>
+
+      <rect x="16" y="140" width="728" height="66" rx="8" class="d-box d-soft" />
+      <text x="36" y="166" class="d-title">settled from outside</text>
+      <text x="36" y="190" class="d-sub">25 MUST · 4 SHOULD → PASS / FAIL / N-A, each with a specification citation</text>
+
+      <line x1="16" y1="232" x2="744" y2="232" class="d-cut" />
+      <text x="744" y="224" text-anchor="end" class="d-cutlabel">not observable from outside</text>
+
+      <rect x="16" y="248" width="344" height="136" rx="8" class="d-box d-warn" />
+      <text x="36" y="274" class="d-title">INDETERMINATE · 5 MUST</text>
+      <text x="36" y="296" class="d-mono">token-audience-validated</text>
+      <text x="36" y="314" class="d-mono">no-token-passthrough</text>
+      <text x="36" y="332" class="d-mono">handle-possession-is-not-auth</text>
+      <text x="36" y="350" class="d-mono">mrtr-retries-are-idempotent</text>
+      <text x="36" y="368" class="d-mono">invocations-are-audited</text>
+
+      <line x1="366" y1="316" x2="436" y2="316" class="d-line" marker-end="url(#ar-s)" />
+      <text x="401" y="302" text-anchor="middle" class="d-edge">covered by</text>
+
+      <rect x="442" y="248" width="302" height="136" rx="8" class="d-box d-ok" />
+      <text x="462" y="274" class="d-title">broker's own suite</text>
+      <text x="462" y="296" class="d-sub">host-side access a scan does not have</text>
+      <text x="462" y="318" class="d-mono">TestTokenForAnotherAudience…</text>
+      <text x="462" y="336" class="d-mono">TestInboundTokenNeverForwarded</text>
+      <text x="462" y="354" class="d-mono">TestDuplicateRetryIsIdempotent</text>
+      <text x="462" y="372" class="d-mono">TestChainDetectsTampering</text>
+    </svg>
+  )}
+
+  {kind === 'meridian' && (
+    <svg viewBox="0 0 760 340" role="img" aria-label="Meridian evaluation flow. A task starts a trial in its own container with its own workdir volume. The container is destroyed, then state is extracted to the host, and only then do assertions run — on the host, never inside the container. Results are scored as pass to the power of k with a bootstrap confidence interval. The pull request gate compares head against the merge base and blocks only when the drop clears both a tolerance and a paired significance test. Every verdict also carries a minimum detectable effect.">
+      <defs>
+        <marker id="ar-m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" class="d-fill-line" />
+        </marker>
+      </defs>
+
+      <rect x="16" y="30" width="150" height="72" rx="8" class="d-box" />
+      <text x="91" y="60" text-anchor="middle" class="d-title">task</text>
+      <text x="91" y="82" text-anchor="middle" class="d-sub">one trial</text>
+
+      <rect x="204" y="16" width="220" height="100" rx="8" class="d-box d-warn" />
+      <text x="314" y="42" text-anchor="middle" class="d-title">container</text>
+      <text x="314" y="64" text-anchor="middle" class="d-sub">own workdir volume</text>
+      <text x="314" y="84" text-anchor="middle" class="d-sub">agent runs here</text>
+      <text x="314" y="104" text-anchor="middle" class="d-edge">untrusted</text>
+
+      <rect x="462" y="30" width="132" height="72" rx="8" class="d-box" />
+      <text x="528" y="54" text-anchor="middle" class="d-title">extract</text>
+      <text x="528" y="76" text-anchor="middle" class="d-sub">state to host,</text>
+      <text x="528" y="94" text-anchor="middle" class="d-sub">then destroy</text>
+
+      <rect x="632" y="30" width="112" height="72" rx="8" class="d-box d-ok" />
+      <text x="688" y="60" text-anchor="middle" class="d-title">assert</text>
+      <text x="688" y="82" text-anchor="middle" class="d-sub">on the host</text>
+
+      <line x1="172" y1="66" x2="198" y2="66" class="d-line" marker-end="url(#ar-s)" />
+      <line x1="430" y1="66" x2="456" y2="66" class="d-line" marker-end="url(#ar-s)" />
+      <line x1="600" y1="66" x2="626" y2="66" class="d-line" marker-end="url(#ar-s)" />
+
+      <line x1="16" y1="146" x2="744" y2="146" class="d-cut" />
+      <text x="16" y="138" class="d-cutlabel">a contamination probe with a deliberate failing direction proves the isolation is real</text>
+
+      <rect x="16" y="170" width="230" height="90" rx="8" class="d-box d-soft" />
+      <text x="36" y="196" class="d-title">score</text>
+      <text x="36" y="218" class="d-sub">pass^k, bootstrap CI</text>
+      <text x="36" y="238" class="d-sub">not a single mean</text>
+
+      <line x1="252" y1="215" x2="290" y2="215" class="d-line" marker-end="url(#ar-s)" />
+
+      <rect x="296" y="170" width="230" height="90" rx="8" class="d-box d-soft" />
+      <text x="316" y="196" class="d-title">gate</text>
+      <text x="316" y="218" class="d-sub">head vs merge base</text>
+      <text x="316" y="238" class="d-sub">tolerance AND paired test</text>
+
+      <line x1="532" y1="215" x2="570" y2="215" class="d-line" marker-end="url(#ar-s)" />
+
+      <rect x="576" y="170" width="168" height="90" rx="8" class="d-box d-accent" />
+      <text x="596" y="196" class="d-title">and its limit</text>
+      <text x="596" y="218" class="d-sub">minimum</text>
+      <text x="596" y="238" class="d-sub">detectable effect</text>
+
+      <text x="16" y="296" class="d-sub">“this run could only have caught a drop of 0.183 or larger;</text>
+      <text x="16" y="318" class="d-sub">resolving your 0.030 tolerance would take about 262 tasks.”</text>
+    </svg>
+  )}
+
+  {kind === 'rideshare' && (
+    <svg viewBox="0 0 760 330" role="img" aria-label="Serverless ride-share architecture. A client authenticates through Cognito, then reaches an HTTP API Gateway that fans out to six Lambda services — rider, driver, trip, matching, pricing and notification — all backed by DynamoDB. A separate WebSocket API handles live location through its own connection Lambda and the same table. The Lambda functions, routes and IAM roles are drawn dashed because the Terraform in the repository does not yet declare them.">
+      <defs>
+        <marker id="ar-r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" class="d-fill-line" />
+        </marker>
+      </defs>
+
+      <rect x="16" y="120" width="118" height="66" rx="8" class="d-box" />
+      <text x="75" y="148" text-anchor="middle" class="d-title">client</text>
+      <text x="75" y="170" text-anchor="middle" class="d-sub">web app</text>
+
+      <rect x="16" y="24" width="118" height="60" rx="8" class="d-box d-soft" />
+      <text x="75" y="50" text-anchor="middle" class="d-title">Cognito</text>
+      <text x="75" y="70" text-anchor="middle" class="d-sub">auth</text>
+      <line x1="75" y1="116" x2="75" y2="90" class="d-line" marker-end="url(#ar-s)" />
+
+      <rect x="180" y="34" width="160" height="66" rx="8" class="d-box d-accent" />
+      <text x="260" y="60" text-anchor="middle" class="d-title">HTTP API</text>
+      <text x="260" y="82" text-anchor="middle" class="d-sub">request / response</text>
+
+      <rect x="180" y="216" width="160" height="66" rx="8" class="d-box d-accent" />
+      <text x="260" y="242" text-anchor="middle" class="d-title">WebSocket API</text>
+      <text x="260" y="264" text-anchor="middle" class="d-sub">live location</text>
+
+      <line x1="140" y1="140" x2="176" y2="80" class="d-line" marker-end="url(#ar-s)" />
+      <line x1="140" y1="166" x2="176" y2="234" class="d-line" marker-end="url(#ar-s)" />
+
+      <rect x="386" y="24" width="212" height="152" rx="8" class="d-box d-dash" />
+      <text x="406" y="50" class="d-title">6 Lambda services</text>
+      <text x="406" y="74" class="d-mono">rider · driver · trip</text>
+      <text x="406" y="94" class="d-mono">matching · pricing</text>
+      <text x="406" y="114" class="d-mono">notification</text>
+      <text x="406" y="142" class="d-sub">JavaScript, shared layer,</text>
+      <text x="406" y="162" class="d-sub">1,894 lines of handlers</text>
+
+      <rect x="386" y="216" width="212" height="66" rx="8" class="d-box d-dash" />
+      <text x="492" y="242" text-anchor="middle" class="d-title">connection Lambda</text>
+      <text x="492" y="264" text-anchor="middle" class="d-sub">connect / disconnect</text>
+
+      <line x1="346" y1="67" x2="380" y2="67" class="d-line" marker-end="url(#ar-s)" />
+      <line x1="346" y1="249" x2="380" y2="249" class="d-line" marker-end="url(#ar-s)" />
+
+      <rect x="644" y="120" width="100" height="66" rx="8" class="d-box" />
+      <text x="694" y="148" text-anchor="middle" class="d-title">DynamoDB</text>
+      <text x="694" y="170" text-anchor="middle" class="d-sub">state</text>
+
+      <line x1="604" y1="120" x2="638" y2="142" class="d-line" marker-end="url(#ar-s)" />
+      <line x1="604" y1="230" x2="638" y2="180" class="d-line" marker-end="url(#ar-s)" />
+
+    </svg>
+  )}
+
+  <figcaption>{captions[kind]}</figcaption>
+</figure>
