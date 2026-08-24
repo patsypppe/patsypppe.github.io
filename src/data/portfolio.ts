@@ -9,6 +9,13 @@ export interface Link {
   readonly href: string
 }
 
+/** A real console capture. `note` must say how and when it was produced. */
+export interface Transcript {
+  readonly title: string
+  readonly lines: readonly string[]
+  readonly note: string
+}
+
 export interface Project {
   readonly name: string
   readonly repo: string
@@ -21,6 +28,8 @@ export interface Project {
   /** Stated plainly rather than omitted. */
   readonly caveat?: string
   readonly diagram?: 'sentinel' | 'meridian' | 'rideshare'
+  /** Captured by running the tool. Never hand-written to look like output. */
+  readonly transcripts?: readonly Transcript[]
 }
 
 export interface Publication {
@@ -64,11 +73,78 @@ export const projects: readonly Project[] = [
     stack: ['Go', 'Python', 'Envoy', 'PostgreSQL', 'OpenTelemetry', 'SARIF'],
     facts: [
       '13k lines of Go, 5.7k of Python, 36 test files',
-      '100% recall against 28 seeded violations, 0 false positives',
+      'Detected 29 of the 29 violations the fixture declares it seeds — nothing missed, nothing flagged that was not seeded — and 0 failures against the conformant fixture',
       'golangci-lint, go test -race, mypy and ruff enforced in CI',
       'No model API key required anywhere, so CI is fast and never externally flaky',
     ],
     diagram: 'sentinel',
+    transcripts: [
+      {
+        title: 'the same harness against two servers',
+        lines: [
+          '$ sentinel scan --endpoint http://127.0.0.1:9000/mcp --gate must   # unmigrated',
+          '',
+          'MUST:   2 pass, 25 fail, 5 indeterminate, 0 n/a',
+          'SHOULD: 1 pass,  4 fail, 0 n/a',
+          '37 rules in 0.42s',
+          '5 MUST rule(s) cannot be verified black-box and were excluded from the gate.',
+          'exit 1',
+          '',
+          '$ sentinel scan --endpoint http://127.0.0.1:9001/mcp --gate must   # conformant',
+          '',
+          'MUST:   27 pass, 0 fail, 5 indeterminate, 0 n/a',
+          'SHOULD:  5 pass, 0 fail, 0 n/a',
+          '37 rules in 0.29s',
+          '5 MUST rule(s) cannot be verified black-box and were excluded from the gate.',
+          'exit 0',
+        ],
+        note: 'Exit codes are a contract: 0 passed, 1 the target failed the gate, 2 the scanner could not run. CI has to tell "the server is wrong" from "the scanner broke".',
+      },
+      {
+        title: 'a finding, and a refusal to make one',
+        lines: [
+          'FAIL  MCP/2026-07-28/MUST/header-body-mismatch-rejected',
+          '      A header disagreeing with the body is rejected with -32020',
+          '      observed:    a header/body mismatch returned -32011 rather than -32020',
+          '      remediation: Compare Mcp-Method and Mcp-Name against the JSON-RPC body and',
+          '                   return -32020 HeaderMismatch when they disagree. This is what',
+          '                   makes the headers BINDING: a gateway routes on them, so a body',
+          '                   that says something else must not be honoured, or the gateway',
+          '                   authorized a request that never happened.',
+          '      spec:        …/2026-07-28/basic/transports#header-contract',
+          '      evidence:    {\'code\': -32011, \'message\': \'unknown tool\'}',
+          '',
+          '????  MCP/2026-07-28/MUST/token-audience-validated',
+          '      The server rejects tokens not issued for it',
+          '      why:  Settling this needs a token correctly signed by the server\'s OWN',
+          '            issuer but carrying a different audience. The harness cannot mint',
+          '            one, and a token it could forge would be rejected for its signature',
+          '            — which proves nothing about the audience check.',
+          '            To settle it: mint such a token with your issuer and confirm the',
+          '            server refuses it.',
+        ],
+        note: 'Every failure names the rule, what was observed, what to change and the clause it comes from. Every INDETERMINATE says why a scan cannot settle it and what would.',
+      },
+      {
+        title: 'deprecation debt, with removal dates',
+        lines: [
+          '$ sentinel deprecations --endpoint http://127.0.0.1:9000/mcp',
+          '',
+          '6 deprecated feature(s) in use',
+          '',
+          '  IN USE  Roots  (SEP-2577)',
+          '          deprecated:  2026-07-28',
+          '          removable on or after 2027-07-28 (11 month(s) from now)',
+          '          replace with: explicit tool arguments naming the paths a tool may touch',
+          '',
+          '  IN USE  HTTP+SSE transport  (SEP-2596)',
+          '          deprecated:  2025-03-26',
+          '          removable three months after SEP-2596 reaches Final (not yet scheduled)',
+          '          replace with: Streamable HTTP',
+        ],
+        note: 'Two removal windows, and only one of them is arithmetic. HTTP+SSE is gated on an event that has not happened, so the tool prints the condition instead of inventing a date — a date printed here ends up in someone\'s plan as a deadline.',
+      },
+    ],
   },
   {
     name: 'meridian',
@@ -87,6 +163,25 @@ export const projects: readonly Project[] = [
       'Scores pass^k with bootstrap CI, not a single accuracy number',
     ],
     diagram: 'meridian',
+    transcripts: [
+      {
+        title: 'the unit layer, on a machine with no Docker',
+        lines: [
+          '$ uv run pytest -m unit -q',
+          '',
+          '........................................................................ [ 31%]',
+          '........................................................................ [ 63%]',
+          '........................................................................ [ 95%]',
+          '...........                                                              [100%]',
+          '',
+          'SKIPPED [1] tests/integration/test_budget_halt.py:98:',
+          '  the Docker daemon is not reachable; integration tests need it',
+          '',
+          '226 passed, 1 skipped, 46 deselected in 3.20s',
+        ],
+        note: 'The skip is the point: the tests that need real container isolation refuse to run without it rather than quietly passing. 46 deselected are the integration and end-to-end layers.',
+      },
+    ],
   },
   {
     name: 'serverless-rideshare-aws',
