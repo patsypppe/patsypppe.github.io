@@ -229,9 +229,8 @@ export const projects: readonly Project[] = [
       'A signal problem before it is a modelling problem. Neither the deltoid nor the pectoral channel says much alone, so the pipeline computes windowed RMS, integrated area, skewness and kurtosis per channel and classifies the balance between them.',
     ],
     stack: ['TensorFlow/Keras', 'LSTM', 'SciPy', 'pandas'],
-    facts: ['Best validation accuracy in the committed notebooks is 92.5%'],
     caveat:
-      'On a small split of roughly 80 samples, which the repository states alongside the figure.',
+      'Research code from a peer-reviewed paper, released as-is, and not reproducible end to end: the committed notebook reads a `preprocessed.csv` that is not in the repository. No accuracy figure is quoted here, because none of them can currently be re-derived from what is committed.',
   },
 ]
 
