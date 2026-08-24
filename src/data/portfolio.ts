@@ -227,10 +227,11 @@ export const projects: readonly Project[] = [
     tagline: 'Exercise form from two channels of surface EMG',
     body: [
       'A signal problem before it is a modelling problem. Neither the deltoid nor the pectoral channel says much alone, so the pipeline computes windowed RMS, integrated area, skewness and kurtosis per channel and classifies the balance between them.',
+      'It is here because of what re-reading it found rather than what it achieved. Auditing your own published work and publishing the correction is a slower way to be right, and the only one that compounds.',
     ],
     stack: ['TensorFlow/Keras', 'LSTM', 'SciPy', 'pandas'],
     caveat:
-      'Research code from a peer-reviewed paper, released as-is, and not reproducible end to end: the committed notebook reads a `preprocessed.csv` that is not in the repository. No accuracy figure is quoted here, because none of them can currently be re-derived from what is committed.',
+      'No accuracy is quoted here, and the repository now explains why. The label is a threshold on a quantity that is also one of the model\'s input columns, so a three-line rule reproduces every label exactly — a network reported at 92.5% was scoring below a rule it could see. Consecutive windows also overlap by 96.7% before a random train/test split. The README leads with all of this now: the finding is more useful than the figure was.',
   },
 ]
 
