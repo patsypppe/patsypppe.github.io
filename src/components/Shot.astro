@@ -1,0 +1,34 @@
+---
+import type { Shot } from '../data/portfolio'
+
+interface Props {
+  shot: Shot
+  /** CSS `sizes` hint for the slot this image renders in. */
+  sizes: string
+  /** The first screenshot on the page loads eagerly; everything else waits. */
+  eager?: boolean
+  class?: string
+}
+
+const { shot, sizes, eager = false, class: cls } = Astro.props
+const url = (w: number) => `/shots/${shot.file}-${w}.webp`
+const srcset = shot.widths.map((w) => `${url(w)} ${w}w`).join(', ')
+const largest = shot.widths[shot.widths.length - 1] ?? shot.width
+---
+
+<figure class:list={['shot', cls]}>
+  <a class="shot-frame" href={url(largest)} aria-label={`Open full-size screenshot: ${shot.caption}`}>
+    <img
+      src={url(largest)}
+      srcset={srcset}
+      sizes={sizes}
+      width={shot.width}
+      height={shot.height}
+      alt={shot.alt}
+      loading={eager ? 'eager' : 'lazy'}
+      decoding="async"
+      fetchpriority={eager ? 'high' : 'auto'}
+    />
+  </a>
+  <figcaption>{shot.caption}</figcaption>
+</figure>

@@ -1,6 +1,6 @@
 ---
 interface Props {
-  kind: 'sentinel' | 'meridian' | 'rideshare'
+  kind: 'sentinel' | 'meridian'
 }
 const { kind } = Astro.props
 
@@ -9,8 +9,6 @@ const captions: Record<Props['kind'], string> = {
     'What a black-box scan can and cannot settle. Five MUST requirements sit below the line; the harness reports them as INDETERMINATE and the broker covers them with tests that have the access a scan does not.',
   meridian:
     'The container is never trusted. State is extracted to the host and the container destroyed before any assertion runs, and the gate reports the smallest regression the run could actually have detected.',
-  rideshare:
-    'Six services behind an HTTP API, a separate WebSocket API for live location. Dashed edges are declared in the repository but not provisioned by the Terraform as it stands.',
 }
 ---
 
@@ -121,59 +119,6 @@ const captions: Record<Props['kind'], string> = {
 
       <text x="16" y="296" class="d-sub">“this run could only have caught a drop of 0.183 or larger;</text>
       <text x="16" y="318" class="d-sub">resolving your 0.030 tolerance would take about 262 tasks.”</text>
-    </svg>
-  )}
-
-  {kind === 'rideshare' && (
-    <svg viewBox="0 0 760 330" role="img" aria-label="Serverless ride-share architecture. A client authenticates through Cognito, then reaches an HTTP API Gateway that fans out to six Lambda services — rider, driver, trip, matching, pricing and notification — all backed by DynamoDB. A separate WebSocket API handles live location through its own connection Lambda and the same table. The Lambda functions, routes and IAM roles are drawn dashed because the Terraform in the repository does not yet declare them.">
-      <defs>
-        <marker id="ar-r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-          <path d="M0 0 L10 5 L0 10 z" class="d-fill-line" />
-        </marker>
-      </defs>
-
-      <rect x="16" y="120" width="118" height="66" rx="8" class="d-box" />
-      <text x="75" y="148" text-anchor="middle" class="d-title">client</text>
-      <text x="75" y="170" text-anchor="middle" class="d-sub">web app</text>
-
-      <rect x="16" y="24" width="118" height="60" rx="8" class="d-box d-soft" />
-      <text x="75" y="50" text-anchor="middle" class="d-title">Cognito</text>
-      <text x="75" y="70" text-anchor="middle" class="d-sub">auth</text>
-      <line x1="75" y1="116" x2="75" y2="90" class="d-line" marker-end="url(#ar-s)" />
-
-      <rect x="180" y="34" width="160" height="66" rx="8" class="d-box d-accent" />
-      <text x="260" y="60" text-anchor="middle" class="d-title">HTTP API</text>
-      <text x="260" y="82" text-anchor="middle" class="d-sub">request / response</text>
-
-      <rect x="180" y="216" width="160" height="66" rx="8" class="d-box d-accent" />
-      <text x="260" y="242" text-anchor="middle" class="d-title">WebSocket API</text>
-      <text x="260" y="264" text-anchor="middle" class="d-sub">live location</text>
-
-      <line x1="140" y1="140" x2="176" y2="80" class="d-line" marker-end="url(#ar-s)" />
-      <line x1="140" y1="166" x2="176" y2="234" class="d-line" marker-end="url(#ar-s)" />
-
-      <rect x="386" y="24" width="212" height="152" rx="8" class="d-box d-dash" />
-      <text x="406" y="50" class="d-title">6 Lambda services</text>
-      <text x="406" y="74" class="d-mono">rider · driver · trip</text>
-      <text x="406" y="94" class="d-mono">matching · pricing</text>
-      <text x="406" y="114" class="d-mono">notification</text>
-      <text x="406" y="142" class="d-sub">JavaScript, shared layer,</text>
-      <text x="406" y="162" class="d-sub">1,894 lines of handlers</text>
-
-      <rect x="386" y="216" width="212" height="66" rx="8" class="d-box d-dash" />
-      <text x="492" y="242" text-anchor="middle" class="d-title">connection Lambda</text>
-      <text x="492" y="264" text-anchor="middle" class="d-sub">connect / disconnect</text>
-
-      <line x1="346" y1="67" x2="380" y2="67" class="d-line" marker-end="url(#ar-s)" />
-      <line x1="346" y1="249" x2="380" y2="249" class="d-line" marker-end="url(#ar-s)" />
-
-      <rect x="644" y="120" width="100" height="66" rx="8" class="d-box" />
-      <text x="694" y="148" text-anchor="middle" class="d-title">DynamoDB</text>
-      <text x="694" y="170" text-anchor="middle" class="d-sub">state</text>
-
-      <line x1="604" y1="120" x2="638" y2="142" class="d-line" marker-end="url(#ar-s)" />
-      <line x1="604" y1="230" x2="638" y2="180" class="d-line" marker-end="url(#ar-s)" />
-
     </svg>
   )}
 
