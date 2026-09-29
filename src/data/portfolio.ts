@@ -1,7 +1,8 @@
 /**
- * Every number on this site is traceable to something in a public repository.
- * Where a figure exists only in a paper and cannot be reproduced from the code,
- * it is described that way rather than printed as a headline.
+ * Everything the page says lives here, typed. The page itself is layout only.
+ *
+ * Screenshots are real captures of the running apps, stored as WebP in
+ * public/shots/<file>-<width>.webp for every width listed in `widths`.
  */
 
 export interface Link {
@@ -9,27 +10,54 @@ export interface Link {
   readonly href: string
 }
 
-/** A real console capture. `note` must say how and when it was produced. */
+export interface Shot {
+  /** Base name under public/shots, without the width suffix. */
+  readonly file: string
+  /** Widths that exist on disk, smallest first. The last one is the full-size link. */
+  readonly widths: readonly number[]
+  /** Intrinsic size of the largest file, so the browser can reserve space. */
+  readonly width: number
+  readonly height: number
+  readonly alt: string
+  readonly caption: string
+}
+
+export interface Fact {
+  readonly label: string
+  readonly value: string
+}
+
+/** A product: something with users and screens. */
+export interface Product {
+  readonly id: string
+  readonly name: string
+  readonly summary: string
+  readonly status?: string
+  readonly link?: Link
+  readonly body: readonly string[]
+  readonly facts: readonly Fact[]
+  readonly stack: readonly string[]
+  readonly hero: Shot
+  readonly gallery: readonly Shot[]
+}
+
+/** A real console capture. `note` says how and when it was produced. */
 export interface Transcript {
   readonly title: string
   readonly lines: readonly string[]
   readonly note: string
 }
 
-export interface Project {
+/** An open-source tool: the evidence is the repository. */
+export interface Tool {
   readonly name: string
   readonly repo: string
-  readonly tagline: string
-  /** Two or three sentences. What it is, and the one idea that makes it worth reading. */
+  readonly summary: string
   readonly body: readonly string[]
+  readonly facts: readonly string[]
   readonly stack: readonly string[]
-  /** Short, checkable claims. Anything unverifiable belongs in `caveat` instead. */
-  readonly facts?: readonly string[]
-  /** Stated plainly rather than omitted. */
-  readonly caveat?: string
-  readonly diagram?: 'sentinel' | 'meridian' | 'rideshare'
-  /** Captured by running the tool. Never hand-written to look like output. */
-  readonly transcripts?: readonly Transcript[]
+  readonly diagram: 'sentinel' | 'meridian'
+  readonly transcript?: Transcript
 }
 
 export interface Publication {
@@ -42,15 +70,26 @@ export interface Publication {
 export interface Role {
   readonly org: string
   readonly title: string
+  readonly place?: string
   readonly period: string
   readonly points: readonly string[]
 }
 
+export interface School {
+  readonly name: string
+  readonly degree: string
+  readonly period: string
+  readonly note?: string
+}
+
 export const profile = {
   name: 'Pranav T Pattanashetty',
-  tagline: 'Applied machine learning, and the infrastructure it runs on.',
-  blurb:
-    "M.S. Computer Science at Indiana University, graduating May 2027. Software Development Engineer intern at SparkFX, working on agent orchestration in Next.js and TypeScript. Three peer-reviewed conference papers across computer vision, biosignal processing and LLM optimization. Open to new-grad software, machine learning and cloud engineering roles in the US.",
+  role: 'Software engineer',
+  lede: [
+    'I’m finishing an M.S. in Computer Science at Indiana University (May 2027). This summer I was a software development engineer intern at SparkFX, building agent workflows and multi-tenant Postgres for their Community Builder product.',
+    'Outside class I build products end to end. Creuno is a sponsorship marketplace for creators, now in beta. AIGO is a serverless ride-hailing platform on AWS. I’ve also published three peer-reviewed papers in applied machine learning.',
+  ],
+  looking: 'Open to new-grad software, machine learning and cloud roles starting in 2027.',
   location: 'Bloomington, Indiana',
   email: 'ppattana@iu.edu',
   links: [
@@ -60,178 +99,181 @@ export const profile = {
   ] satisfies readonly Link[],
 } as const
 
-export const projects: readonly Project[] = [
+const creunoShot = (file: string, alt: string, caption: string): Shot => ({
+  file,
+  widths: [800, 1280],
+  width: 1280,
+  height: 800,
+  alt,
+  caption,
+})
+
+export const products: readonly Product[] = [
+  {
+    id: 'creuno',
+    name: 'Creuno',
+    summary: 'A workspace and sponsorship marketplace for creators.',
+    status: 'In beta',
+    link: { label: 'creuno.com', href: 'https://creuno.com' },
+    body: [
+      'Creators plan and publish content, see what is working across their channels, and run brand deals from the first pitch to a paid invoice. Brands post campaigns, review applicants and follow results as they come in. I built it with one other engineer.',
+      'Every table sits behind Postgres row-level security, so a creator can only read their own deals and a brand only its own campaigns. A deal moves through an explicit state machine (accepted, delivered, invoiced, paid, complete), which keeps the money from drifting out of step with the work.',
+      'The Creator Coach answers from the creator’s own analytics, content and deal history through pgvector retrieval, its output is schema-validated before it renders, and a promptfoo evaluation suite in CI checks that it does not invent metrics.',
+    ],
+    facts: [
+      { label: 'Shipped', value: '323 pull requests, 216 database migrations' },
+      { label: 'Backend', value: 'Supabase and Postgres with row-level security, 24 edge functions' },
+      { label: 'Release gate', value: '85% statement coverage, 397 Playwright end-to-end tests' },
+      { label: 'AI', value: 'Gemini and Groq-hosted Mistral, pgvector retrieval, Zod-validated output' },
+      { label: 'Frontend', value: '27 lazy-loaded routes, so a first visit fetches one page' },
+    ],
+    stack: ['React', 'TypeScript', 'Vite', 'Tailwind', 'Supabase', 'PostgreSQL', 'pgvector', 'LangGraph', 'Vitest', 'Playwright'],
+    hero: creunoShot(
+      'creuno-home',
+      'Creuno home screen: a left sidebar with Home, Analytics, Discover People, Campaigns, Collabs, Workspace, Calendar, Creator Coach, Messages and Deals. The main area greets the creator and shows cards for $16,700 in motion across 15 active deals, 76 new opportunities, a calendar, 67.9K total audience across two connected channels, a Creator Coach chat panel and a creator score of 62 out of 100.',
+      'Home. Money in motion, what is due this week, and the coach one click away.',
+    ),
+    gallery: [
+      creunoShot(
+        'creuno-analytics',
+        'Creuno analytics overview: total audience 67.9K, average engagement 12.3%, 43 posts tracked, top format Reels, and a YouTube channel health score of 63 with a follower trend line and top post.',
+        'Analytics across YouTube and Instagram, with a channel health score.',
+      ),
+      creunoShot(
+        'creuno-deals',
+        'Creuno deals table: 24 deals, 15 in motion, $11,400 earned. Rows list each sponsorship with its stage icons, status, fee, start date and brand.',
+        'Every sponsorship in one table: stage, status, fee and brand.',
+      ),
+      creunoShot(
+        'creuno-coach',
+        'Creuno Creator Coach: a prompt box reading "Ask anything about your work" with suggested questions such as which post makes the strongest case to a brand and what to charge for a three-video deal.',
+        'The Creator Coach, grounded in the creator’s own numbers.',
+      ),
+      creunoShot(
+        'creuno-campaign',
+        'Creuno brand view of a campaign, PureFlow 30-Day Challenge: campaign photos, the brief, deliverables, applicants and accepted counts, days left, budget committed against a ceiling, and results.',
+        'The brand side: a live campaign with its brief, budget and results.',
+      ),
+    ],
+  },
+  {
+    id: 'aigo',
+    name: 'AIGO',
+    summary: 'Serverless ride-hailing on AWS, with the machine learning kept off the trip path.',
+    body: [
+      'Riders book a trip and follow it live; drivers go online and get matched. Behind the web client are 11 services, six of them Node.js Lambda microservices on API Gateway, EventBridge, SQS and DynamoDB, split along five workflows: trip matching, payments, notifications, ETA prediction and driver location.',
+      'Finding nearby drivers is the hot path, so driver positions are bucketed by geohash on a DynamoDB global secondary index. Against 100,000 seeded drivers that reads 95.06% fewer items than a scan at 100% recall, and building the benchmark exposed a 100x unit error in the radius-to-cell conversion, which is now fixed.',
+      'Demand forecasting, dynamic pricing, fraud scoring, support-message triage and rider-driver matching run on Amazon Bedrock and SageMaker as asynchronous, event-driven paths, so a slow model call never holds up a live trip.',
+    ],
+    facts: [
+      { label: 'Services', value: '11, including 6 Node.js Lambda microservices' },
+      { label: 'Location reads', value: '95.06% fewer items with geohash buckets, 100% recall' },
+      { label: 'API cost', value: 'HTTP API over REST API Gateway, about 70% less per request at list price' },
+      { label: 'Shared code', value: 'One Lambda layer used by all 6 services' },
+      { label: 'Infrastructure', value: 'Terraform, GitHub Actions, CloudWatch' },
+    ],
+    stack: ['Node.js', 'AWS Lambda', 'API Gateway', 'EventBridge', 'SQS', 'DynamoDB', 'Bedrock', 'SageMaker', 'Terraform', 'React', 'Leaflet'],
+    hero: {
+      file: 'aigo-trip',
+      widths: [1280, 2560],
+      width: 2560,
+      height: 1542,
+      alt: 'AIGO live trip screen: a street map with the car at the pickup point and a line to the drop-off pin, a LIVE WEBSOCKET badge, and a progress list where finding a driver, driver assigned and driver on the way are done and on the trip is current.',
+      caption: 'A trip in progress. The driver position and status arrive over the WebSocket API.',
+    },
+    gallery: [
+      {
+        file: 'aigo-rider',
+        widths: [1000, 2000],
+        width: 2000,
+        height: 1600,
+        alt: 'AIGO rider dashboard: 5 total rides, $14.92 spent, an active ride with a Track ride button, a Book a ride card, and a list of recent rides with distance, ride type, fare and status.',
+        caption: 'Rider dashboard with trip history, fares and the active ride.',
+      },
+      {
+        file: 'aigo-driver',
+        widths: [1000, 2000],
+        width: 2000,
+        height: 1600,
+        alt: 'AIGO driver mode: the driver is online and available with a 5.0 rating, vehicle details for a 2024 white Toyota Corolla Hybrid, and a map showing the driver position.',
+        caption: 'Driver mode. Going online writes the driver’s geohash so they can be matched.',
+      },
+    ],
+  },
+]
+
+export const tools: readonly Tool[] = [
   {
     name: 'sentinel',
     repo: 'https://github.com/patsypppe/sentinel',
-    tagline: 'MCP conformance, and a server worth grading',
+    summary: 'A stateless MCP server in Go, and a harness that grades any MCP server against the spec.',
     body: [
-      'On 28 July 2026 the Model Context Protocol removed sessions and the `initialize` handshake, made `server/discover` mandatory, replaced server-initiated requests with Multi Round-Trip Requests, and put Roots, Sampling, Logging, HTTP+SSE and OAuth Dynamic Client Registration on a twelve-month removal clock. Every server written before that date is now non-conformant in ways its authors have not enumerated.',
-      'Sentinel is two halves: a Go broker built natively on the new revision, and a Python harness that scans any MCP endpoint, grades it rule by rule with a specification citation attached to each finding, and inventories the deprecated features still in use with the date each becomes removable.',
-      'The interesting part is what it refuses to say. Five normative MUST requirements cannot be settled from outside a server — whether a token audience is really checked, whether an inbound token reaches a downstream dependency, whether a retry is idempotent at the effect rather than in the reply. The harness reports those as INDETERMINATE, excludes them from the gate, and reprints them on every scan. A scanner that graded them as passes would be lying, and the clean report it produced would be worse than no report.',
+      'The July 2026 revision of the Model Context Protocol removed sessions and made every server written before it non-conformant in ways nobody had listed. Sentinel is a Go broker built on the new revision, behind Envoy, plus a Python harness that scans any endpoint and grades it rule by rule, with the specification clause attached to each finding.',
+      'Five MUST requirements cannot be checked from outside a server, such as whether a token’s audience is really validated. The harness reports those as indeterminate and leaves them out of the gate instead of counting them as passes.',
     ],
-    stack: ['Go', 'Python', 'Envoy', 'PostgreSQL', 'OpenTelemetry', 'SARIF'],
     facts: [
-      '13k lines of Go, 5.7k of Python, 36 test files',
-      'Detected 29 of the 29 violations the fixture declares it seeds — nothing missed, nothing flagged that was not seeded — and 0 failures against the conformant fixture',
-      'golangci-lint, go test -race, mypy and ruff enforced in CI',
-      'No model API key required anywhere, so CI is fast and never externally flaky',
+      '52-rule executable conformance catalog with SARIF output and an exit-code contract for CI',
+      '39 of 39 seeded violations caught, 0 false positives',
+      'Retries made idempotent by sealing request state with AEAD',
+      'Manifest tokenization 80.45% faster, verified with benchstat at n=10',
     ],
+    stack: ['Go', 'Python', 'Envoy', 'PostgreSQL', 'OpenTelemetry', 'Docker Compose'],
     diagram: 'sentinel',
-    transcripts: [
-      {
-        title: 'the same harness against two servers',
-        lines: [
-          '$ sentinel scan --endpoint http://127.0.0.1:9000/mcp --gate must   # unmigrated',
-          '',
-          'MUST:   2 pass, 25 fail, 5 indeterminate, 0 n/a',
-          'SHOULD: 1 pass,  4 fail, 0 n/a',
-          '37 rules in 0.42s',
-          '5 MUST rule(s) cannot be verified black-box and were excluded from the gate.',
-          'exit 1',
-          '',
-          '$ sentinel scan --endpoint http://127.0.0.1:9001/mcp --gate must   # conformant',
-          '',
-          'MUST:   27 pass, 0 fail, 5 indeterminate, 0 n/a',
-          'SHOULD:  5 pass, 0 fail, 0 n/a',
-          '37 rules in 0.29s',
-          '5 MUST rule(s) cannot be verified black-box and were excluded from the gate.',
-          'exit 0',
-        ],
-        note: 'Exit codes are a contract: 0 passed, 1 the target failed the gate, 2 the scanner could not run. CI has to tell "the server is wrong" from "the scanner broke".',
-      },
-      {
-        title: 'a finding, and a refusal to make one',
-        lines: [
-          'FAIL  MCP/2026-07-28/MUST/header-body-mismatch-rejected',
-          '      A header disagreeing with the body is rejected with -32020',
-          '      observed:    a header/body mismatch returned -32011 rather than -32020',
-          '      remediation: Compare Mcp-Method and Mcp-Name against the JSON-RPC body and',
-          '                   return -32020 HeaderMismatch when they disagree. This is what',
-          '                   makes the headers BINDING: a gateway routes on them, so a body',
-          '                   that says something else must not be honoured, or the gateway',
-          '                   authorized a request that never happened.',
-          '      spec:        …/2026-07-28/basic/transports#header-contract',
-          '      evidence:    {\'code\': -32011, \'message\': \'unknown tool\'}',
-          '',
-          '????  MCP/2026-07-28/MUST/token-audience-validated',
-          '      The server rejects tokens not issued for it',
-          '      why:  Settling this needs a token correctly signed by the server\'s OWN',
-          '            issuer but carrying a different audience. The harness cannot mint',
-          '            one, and a token it could forge would be rejected for its signature',
-          '            — which proves nothing about the audience check.',
-          '            To settle it: mint such a token with your issuer and confirm the',
-          '            server refuses it.',
-        ],
-        note: 'Every failure names the rule, what was observed, what to change and the clause it comes from. Every INDETERMINATE says why a scan cannot settle it and what would.',
-      },
-      {
-        title: 'deprecation debt, with removal dates',
-        lines: [
-          '$ sentinel deprecations --endpoint http://127.0.0.1:9000/mcp',
-          '',
-          '6 deprecated feature(s) in use',
-          '',
-          '  IN USE  Roots  (SEP-2577)',
-          '          deprecated:  2026-07-28',
-          '          removable on or after 2027-07-28 (11 month(s) from now)',
-          '          replace with: explicit tool arguments naming the paths a tool may touch',
-          '',
-          '  IN USE  HTTP+SSE transport  (SEP-2596)',
-          '          deprecated:  2025-03-26',
-          '          removable three months after SEP-2596 reaches Final (not yet scheduled)',
-          '          replace with: Streamable HTTP',
-        ],
-        note: 'Two removal windows, and only one of them is arithmetic. HTTP+SSE is gated on an event that has not happened, so the tool prints the condition instead of inventing a date — a date printed here ends up in someone\'s plan as a deadline.',
-      },
-    ],
+    transcript: {
+      title: 'the same harness against two servers',
+      lines: [
+        '$ sentinel scan --endpoint http://127.0.0.1:9000/mcp --gate must   # unmigrated',
+        '',
+        'MUST:   2 pass, 25 fail, 5 indeterminate, 0 n/a',
+        'SHOULD: 1 pass,  4 fail, 0 n/a',
+        '37 rules in 0.42s',
+        '5 MUST rule(s) cannot be verified black-box and were excluded from the gate.',
+        'exit 1',
+        '',
+        '$ sentinel scan --endpoint http://127.0.0.1:9001/mcp --gate must   # conformant',
+        '',
+        'MUST:   27 pass, 0 fail, 5 indeterminate, 0 n/a',
+        'SHOULD:  5 pass, 0 fail, 0 n/a',
+        '37 rules in 0.29s',
+        '5 MUST rule(s) cannot be verified black-box and were excluded from the gate.',
+        'exit 0',
+      ],
+      note: 'Captured on 24 August 2026 against the fixtures in the repository, when the catalog had 37 rules. Exit 1 means the server failed the gate; exit 2 is reserved for the scanner itself failing.',
+    },
   },
   {
     name: 'meridian',
     repo: 'https://github.com/patsypppe/meridian',
-    tagline: 'Agent evaluation that reports its own blind spot',
+    summary: 'An agent evaluation harness that tells you how small a regression it could have missed.',
     body: [
-      'Answers one question: did this change make the agent better or worse, and can you reproduce that answer tomorrow. Every trial runs in its own container with its own workdir volume, and the suite ships a contamination probe with a deliberate failing direction — isolation is asserted rather than assumed, because a probe that cannot fail proves nothing.',
-      'It never trusts the container. Assertions run on state extracted to the host, after the container is gone. In 2026 researchers broke several major agent benchmarks through exactly that hole — agents writing a `conftest.py` that rewrote every result to passed, or replacing `/usr/bin/curl` to emit fake output.',
-      'Every verdict carries a minimum detectable effect: this run could only have caught a drop of 0.183 or larger; resolving a 0.030 tolerance would take about 262 tasks. A PASS from an underpowered suite is not evidence that nothing broke, and a gate that reports those identically teaches people to trust it exactly when it is least reliable.',
+      'Every trial runs in its own container, and assertions run on state copied out to the host after the container is gone, so an agent cannot pass by rewriting its own test results. A contamination probe with a deliberate failing direction checks that the isolation actually holds.',
+      'Scores are pass^k with a cluster bootstrap and a paired significance test, and every verdict reports its minimum detectable effect. A pass from an underpowered suite is not evidence that nothing broke, and the gate says so.',
     ],
-    stack: ['Python 3.12', 'Typer', 'Docker', 'Postgres', 'Alembic', 'Starlette'],
     facts: [
-      'Measured by itself: 0/30 false regressions, 4/5 seeded regressions caught, 5/5 replay fidelity',
-      'The one it misses is explained with the arithmetic rather than tuned away',
-      '331 tests across unit, Docker-backed integration and end-to-end layers',
-      'Scores pass^k with bootstrap CI, not a single accuracy number',
+      '0 false regressions across 30 gate runs',
+      '4 of 5 seeded regressions caught, with the miss explained in the results file',
+      '5 of 5 archived runs replayed byte-exact',
+      'Minimum detectable effect 0.183; a 0.030 tolerance needs about 262 tasks',
     ],
+    stack: ['Python', 'Docker', 'PostgreSQL', 'Alembic', 'pytest', 'mypy --strict'],
     diagram: 'meridian',
-    transcripts: [
-      {
-        title: 'the unit layer, on a machine with no Docker',
-        lines: [
-          '$ uv run pytest -m unit -q',
-          '',
-          '........................................................................ [ 31%]',
-          '........................................................................ [ 63%]',
-          '........................................................................ [ 95%]',
-          '...........                                                              [100%]',
-          '',
-          'SKIPPED [1] tests/integration/test_budget_halt.py:98:',
-          '  the Docker daemon is not reachable; integration tests need it',
-          '',
-          '226 passed, 1 skipped, 46 deselected in 3.20s',
-        ],
-        note: 'The skip is the point: the tests that need real container isolation refuse to run without it rather than quietly passing. 46 deselected are the integration and end-to-end layers.',
-      },
-    ],
-  },
-  {
-    name: 'serverless-rideshare-aws',
-    repo: 'https://github.com/patsypppe/serverless-rideshare-aws',
-    tagline: 'Six Lambda services, and a README that admits what is missing',
-    body: [
-      'A ride-sharing backend decomposed into six Lambda-backed services behind an HTTP API Gateway, with a separate WebSocket API for live location, DynamoDB for state, Cognito for auth, and the environment declared in Terraform rather than clicked together in a console.',
-      'Ride hailing is the textbook always-on backend, which normally means paying for servers that sit idle between requests. This is the same system built so that nothing runs between rides.',
-    ],
-    stack: ['Node.js', 'Terraform', 'Lambda', 'DynamoDB', 'API Gateway v2', 'Cognito'],
-    caveat:
-      'An architecture and service-layer study, not a deployed product. The Terraform provisions the data and edge layer but does not yet declare the Lambda functions, routes or IAM roles, so it does not deploy end to end. The repository says so on its front page.',
-    diagram: 'rideshare',
-  },
-  {
-    name: 'cricket-shot-classification',
-    repo: 'https://github.com/patsypppe/cricket-shot-classification',
-    tagline: 'Video classification with a physics-informed loss',
-    body: [
-      'Five model variants over the same seven-class problem, written to be compared: a CNN-GRU with key-frame selection, a MobileNet baseline, a 3D ResNet with a Vision Transformer, and a physics-informed model that adds temporal continuity, energy and momentum terms to the classification loss.',
-      'A bat swing is a smooth trajectory, so a model whose per-frame beliefs jump around is wrong even when its final answer is right. The physics terms penalise exactly that.',
-    ],
-    stack: ['PyTorch', 'ViT', '3D ResNet', 'Grad-CAM', 'Weights & Biases'],
-    caveat:
-      'Research code behind a peer-reviewed conference paper, released as-is. The video dataset is not redistributable and no trained checkpoints or result artifacts are committed, so the accuracy reported in the paper cannot be reproduced from this repository alone.',
-  },
-  {
-    name: 'metaheuristic-llm-finetuning',
-    repo: 'https://github.com/patsypppe/metaheuristic-llm-finetuning',
-    tagline: 'How much of a model should you freeze? Search for it',
-    body: [
-      'Usually that decision is a guess — freeze everything but the last few layers. This treats the freezing schedule as a search problem instead, running a genetic algorithm and the Whale Optimization Algorithm over freezing percentage and crossover operator for RoBERTa on SST-2.',
-      'Two findings held across every configuration: SBX crossover wins, and less freezing wins.',
-    ],
-    stack: ['PyTorch', 'Hugging Face', 'RoBERTa', 'genetic algorithms', 'SST-2'],
-    facts: ['Best result 94.67% accuracy (Whale Optimization, SBX crossover, 30% layer freezing)'],
-    caveat:
-      'The genetic-algorithm experiment is committed as a notebook; the Whale Optimization implementation is not in the repository, though its results are.',
-  },
-  {
-    name: 'EMG-Dumbbell-press',
-    repo: 'https://github.com/patsypppe/EMG-Dumbbell-press',
-    tagline: 'Exercise form from two channels of surface EMG',
-    body: [
-      'A signal problem before it is a modelling problem. Neither the deltoid nor the pectoral channel says much alone, so the pipeline computes windowed RMS, integrated area, skewness and kurtosis per channel and classifies the balance between them.',
-      'It is here because of what re-reading it found rather than what it achieved. Auditing your own published work and publishing the correction is a slower way to be right, and the only one that compounds.',
-    ],
-    stack: ['TensorFlow/Keras', 'LSTM', 'SciPy', 'pandas'],
-    caveat:
-      'No accuracy is quoted here, and the repository now explains why. The label is a threshold on a quantity that is also one of the model\'s input columns, so a three-line rule reproduces every label exactly — a network reported at 92.5% was scoring below a rule it could see. Consecutive windows also overlap by 96.7% before a random train/test split. The README leads with all of this now: the finding is more useful than the figure was.',
+    transcript: {
+      title: 'the unit layer, on a machine with no Docker',
+      lines: [
+        '$ uv run pytest -m unit -q',
+        '',
+        '........................................................................ [ 31%]',
+        '........................................................................ [ 63%]',
+        '........................................................................ [ 95%]',
+        '...........                                                              [100%]',
+        '',
+        'SKIPPED [1] tests/integration/test_budget_halt.py:98:',
+        '  the Docker daemon is not reachable; integration tests need it',
+        '',
+        '226 passed, 1 skipped, 46 deselected in 3.20s',
+      ],
+      note: 'Captured on 24 August 2026. The tests that need real container isolation refuse to run without it rather than quietly passing.',
+    },
   },
 ]
 
@@ -239,19 +281,19 @@ export const publications: readonly Publication[] = [
   {
     title: 'Cricket shot classification from video',
     venue: 'Computing Conference, United Kingdom',
-    method: 'Vision Transformers with a physics-informed loss',
+    method: 'A 3D ResNet-18 trained with a physics-informed loss: temporal continuity, energy and momentum terms.',
     repo: 'https://github.com/patsypppe/cricket-shot-classification',
   },
   {
     title: 'Enhancing fine-tuning of pre-trained language models with metaheuristic algorithms',
     venue: '11th ICSCMI, Melbourne',
-    method: 'Genetic algorithm and Whale Optimization over the layer-freezing schedule',
+    method: 'A genetic algorithm and the Whale Optimization Algorithm searching the layer-freezing schedule for RoBERTa.',
     repo: 'https://github.com/patsypppe/metaheuristic-llm-finetuning',
   },
   {
     title: 'Exercise form detection from surface electromyography',
     venue: '6th IEEE Conference, Malaysia',
-    method: 'Windowed signal features with recurrent models',
+    method: 'Windowed signal features from two surface EMG channels, classified with recurrent models.',
     repo: 'https://github.com/patsypppe/EMG-Dumbbell-press',
   },
 ]
@@ -260,30 +302,46 @@ export const roles: readonly Role[] = [
   {
     org: 'SparkFX',
     title: 'Software Development Engineer Intern',
-    period: 'June 2026 — present',
+    place: 'Charlotte, NC',
+    period: 'Jun – Aug 2026',
     points: [
-      'Community Builder: connecting communities such as HOAs and resolving member issues through AI agent orchestration with automatic delegation.',
-      'Reported 30% reduction in operational cost and manual handling through that orchestration, and 20% faster page loads through caching.',
-      'Next.js 16 App Router, TypeScript, Tailwind v4.',
+      'Built the Community Builder dispatch backend: LangGraph and OpenAI agent workflows on Celery workers that classify, delegate, escalate and route resident issues, cutting staff time on manual dispatch 28%.',
+      'Took 20% off p95 page load across a 22-route Next.js front end with tenant-keyed Redis caching, TanStack Query deduplication and leaner Prisma queries.',
+      'Enforced tenant isolation with JWT-scoped Postgres row-level security (59 policies over 17 tables), tested with OWASP ZAP and adversarial SQL.',
     ],
   },
   {
-    org: 'PROLIM Solutions India',
+    org: 'PROLIM Solutions',
     title: 'Software Developer Intern',
-    period: 'January — April 2025',
+    period: 'Jan – Apr 2025',
     points: [
-      'Built 7+ REST APIs with role-based access control and dashboards for a manufacturing management system spanning three production lines, used daily by 20+ operators.',
-      'Cut batch processing from 20–25 minutes to 8–10, reduced manual data entry 50% and errors 30%, and shrank release rollout from five days to two.',
-      'Earned the Mendix Rapid Developer certification.',
+      'Built Java and Spring Boot services with 7+ role-protected REST APIs for order, inventory and QC workflows, used daily by 20+ operators on three production lines.',
+      'Cut batch processing from 20–25 minutes to 8–10 by rewriting query plans, batching writes and indexing high-volume tables.',
+      'Shortened release rollout from five days to two with OpenAPI service contracts and JUnit tests in Jenkins CI.',
     ],
   },
   {
     org: 'LiRC Tek Solutions',
     title: 'Software Developer Intern',
-    period: 'June — August 2024',
+    place: 'Bengaluru, India',
+    period: 'Jun – Aug 2024',
     points: [
-      'Automated transportation-management rate-confirmation processing in Python, cutting per-order handling time 45%.',
-      'Built regex parsers that eliminated 80% of manual document review at 95% extraction accuracy.',
+      'Built a PDF-to-TMS ingestion pipeline that writes 15+ fields per order, cutting manual review 80% and per-order handling time 45%.',
+      'Wrote the Python extraction service over AWS Textract and pdfplumber at 95% field accuracy, with per-field failure isolation.',
     ],
+  },
+]
+
+export const schools: readonly School[] = [
+  {
+    name: 'Indiana University Bloomington',
+    degree: 'M.S., Computer Science',
+    period: '2025 – 2027',
+    note: 'GPA 3.89. Assistant instructor for Introduction to Programming.',
+  },
+  {
+    name: 'PES University',
+    degree: 'B.Tech., Computer Science',
+    period: '2021 – 2025',
   },
 ]
