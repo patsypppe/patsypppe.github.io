@@ -1,17 +1,16 @@
 ---
 import '../styles/global.css'
 import Diagram from '../components/Diagram.astro'
-import { profile, projects, publications, roles } from '../data/portfolio'
+import Shot from '../components/Shot.astro'
+import { profile, products, tools, publications, roles, schools } from '../data/portfolio'
 
-/** Split on backticks so `code` in the data renders as <code> without a markdown dependency. */
-function segments(text: string): { code: boolean; text: string }[] {
-  return text.split('`').map((part, i) => ({ code: i % 2 === 1, text: part }))
-}
-
-const title = `${profile.name} — software, machine learning, infrastructure`
+const title = `${profile.name}, software engineer`
 const description =
-  'M.S. Computer Science at Indiana University. MCP conformance tooling in Go, agent evaluation in Python, serverless AWS, and three peer-reviewed papers.'
+  'M.S. Computer Science at Indiana University, graduating May 2027. Creuno, a creator sponsorship marketplace in beta; AIGO, serverless ride-hailing on AWS; open-source MCP and agent-evaluation tooling; three peer-reviewed papers.'
 const og = new URL('/og.png', Astro.site).href
+
+const HERO_SIZES = '(min-width: 1180px) 1120px, calc(100vw - 32px)'
+const GRID_SIZES = '(min-width: 1180px) 548px, (min-width: 760px) calc(50vw - 40px), calc(100vw - 32px)'
 ---
 
 <!doctype html>
@@ -19,6 +18,8 @@ const og = new URL('/og.png', Astro.site).href
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#f8f6f1" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={Astro.site?.href} />
@@ -29,123 +30,159 @@ const og = new URL('/og.png', Astro.site).href
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={og} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/fonts/newsreader-opsz.woff2" as="font" type="font/woff2" crossorigin />
   </head>
 
   <body>
     <a class="skip" href="#work">Skip to the work</a>
 
-    <div class="wrap">
-      <header>
-        <picture>
-          <source media="(prefers-color-scheme: dark)" srcset="/terminal-dark.svg" />
-          <source media="(prefers-color-scheme: light)" srcset="/terminal-light.svg" />
-          <img
-            class="panel"
-            src="/terminal-light.svg"
-            alt={`Terminal panel introducing ${profile.name}: M.S. Computer Science at Indiana University, SDE intern at SparkFX, three peer-reviewed papers, based in Bloomington, Indiana.`}
-            width="980"
-            height="759"
-          />
-        </picture>
+    <header class="intro wrap">
+      <nav class="topnav" aria-label="Sections">
+        <a href="#work">Work</a>
+        <a href="#open-source">Open source</a>
+        <a href="#research">Research</a>
+        <a href="#experience">Experience</a>
+      </nav>
 
-        <h1>{profile.name}</h1>
-        <p class="tagline">{profile.tagline}</p>
-        <p class="blurb">{profile.blurb}</p>
-        <ul class="links">
-          {profile.links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
-        </ul>
-      </header>
+      <h1>{profile.name}</h1>
+      <p class="role">{profile.role} <span aria-hidden="true">·</span> {profile.location}</p>
+      <div class="lede">
+        {profile.lede.map((para) => <p>{para}</p>)}
+      </div>
+      <p class="looking"><span class="dot" aria-hidden="true"></span>{profile.looking}</p>
+      <ul class="links">
+        {profile.links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+      </ul>
+    </header>
 
-      <main>
-        <section id="work">
-          <h2>Selected work</h2>
-          <p class="evidence-note">
-            The console blocks below are captures, not illustrations — produced on 24 August 2026 by
-            running each tool against the fixtures committed in its own repository, on a machine
-            with no Docker and no GPU. Where a project's numbers could not be reproduced that way,
-            it says so instead of showing something that looks like output.
-          </p>
-          {projects.map((p) => (
-            <article class="project">
-              <div class="project-head">
-                <h3><a href={p.repo}>{p.name}</a></h3>
-                <span class="project-tag">{p.tagline}</span>
+    <main>
+      <section id="work" class="section wrap" aria-labelledby="work-h">
+        <h2 id="work-h" class="section-title">Products</h2>
+
+        {products.map((p, i) => (
+          <article class="product" id={p.id} aria-labelledby={`${p.id}-h`}>
+            <div class="product-head">
+              <div>
+                <h3 id={`${p.id}-h`}>
+                  {p.name}
+                  {p.status && <span class="status">{p.status}</span>}
+                </h3>
+                <p class="summary">{p.summary}</p>
               </div>
+              {p.link && <a class="visit" href={p.link.href}>{p.link.label} <span aria-hidden="true">↗</span></a>}
+            </div>
 
-              {p.body.map((para) => (
-                <p>{segments(para).map((s) => (s.code ? <code>{s.text}</code> : <Fragment>{s.text}</Fragment>))}</p>
-              ))}
+            <Shot shot={p.hero} sizes={HERO_SIZES} eager={i === 0} class="shot-hero" />
 
-              {p.diagram && <Diagram kind={p.diagram} />}
+            <div class="product-body">
+              <div class="prose">
+                {p.body.map((para) => <p>{para}</p>)}
+              </div>
+              <dl class="facts">
+                {p.facts.map((f) => (
+                  <div>
+                    <dt>{f.label}</dt>
+                    <dd>{f.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
 
-              {p.transcripts?.map((t) => (
-                <figure class="term">
-                  <div class="term-bar"><span></span><span></span><span></span><em>{t.title}</em></div>
-                  <pre>{t.lines.join('\n')}</pre>
-                  <figcaption>{t.note}</figcaption>
-                </figure>
-              ))}
+            <div class:list={['gallery', { 'gallery-2': p.gallery.length % 2 === 0 }]}>
+              {p.gallery.map((s) => <Shot shot={s} sizes={GRID_SIZES} />)}
+            </div>
 
-              {p.facts && (
-                <ul class="facts">
-                  {p.facts.map((f) => <li>{f}</li>)}
-                </ul>
-              )}
+            <p class="stack"><span class="stack-label">Built with</span> {p.stack.join(' · ')}</p>
+          </article>
+        ))}
+      </section>
 
-              {p.caveat && (
-                <p class="caveat"><strong>Stated plainly:</strong> {p.caveat}</p>
-              )}
+      <section id="open-source" class="section wrap" aria-labelledby="oss-h">
+        <h2 id="oss-h" class="section-title">Open source</h2>
 
-              <ul class="stack">
-                {p.stack.map((s) => <li>{s}</li>)}
+        {tools.map((t) => (
+          <article class="tool" aria-labelledby={`${t.name}-h`}>
+            <div class="tool-text">
+              <h3 id={`${t.name}-h`}><a href={t.repo}>{t.name}</a></h3>
+              <p class="summary">{t.summary}</p>
+              {t.body.map((para) => <p>{para}</p>)}
+              <ul class="checks">
+                {t.facts.map((f) => <li>{f}</li>)}
               </ul>
-            </article>
+              <p class="stack"><span class="stack-label">Built with</span> {t.stack.join(' · ')}</p>
+              <p class="repo-link"><a href={t.repo}>github.com/patsypppe/{t.name}</a></p>
+            </div>
+            <div class="tool-side">
+              <Diagram kind={t.diagram} />
+              {t.transcript && (
+                <details class="term">
+                  <summary>Console capture: {t.transcript.title}</summary>
+                  <pre>{t.transcript.lines.join('\n')}</pre>
+                  <p class="term-note">{t.transcript.note}</p>
+                </details>
+              )}
+            </div>
+          </article>
+        ))}
+      </section>
+
+      <section id="research" class="section wrap" aria-labelledby="research-h">
+        <h2 id="research-h" class="section-title">Peer-reviewed research</h2>
+        <ol class="rows">
+          {publications.map((pub) => (
+            <li class="row">
+              <p class="row-side">{pub.venue}</p>
+              <div class="row-main">
+                <h3>{pub.title}</h3>
+                <p>{pub.method}</p>
+                {pub.repo && <p class="row-link"><a href={pub.repo}>Code</a></p>}
+              </div>
+            </li>
           ))}
-        </section>
+        </ol>
+      </section>
 
-        <section id="research">
-          <h2>Peer-reviewed research</h2>
-          <div class="rows">
-            {publications.map((pub) => (
-              <div class="row">
-                <div class="row-side">{pub.venue}</div>
-                <div class="row-main">
-                  <h3>{pub.title}</h3>
-                  <p>{pub.method}</p>
-                  {pub.repo && <p><a href={pub.repo}>Code</a> · <span class="pending">DOI pending</span></p>}
-                </div>
+      <section id="experience" class="section wrap" aria-labelledby="exp-h">
+        <h2 id="exp-h" class="section-title">Experience</h2>
+        <ol class="rows">
+          {roles.map((r) => (
+            <li class="row">
+              <p class="row-side">{r.period}{r.place && <><br />{r.place}</>}</p>
+              <div class="row-main">
+                <h3>{r.org} <span class="row-title">{r.title}</span></h3>
+                <ul>{r.points.map((pt) => <li>{pt}</li>)}</ul>
               </div>
-            ))}
-          </div>
-        </section>
+            </li>
+          ))}
+        </ol>
 
-        <section id="experience">
-          <h2>Experience</h2>
-          <div class="rows">
-            {roles.map((r) => (
-              <div class="row">
-                <div class="row-side">{r.period}</div>
-                <div class="row-main">
-                  <h3>{r.title} · {r.org}</h3>
-                  <ul>{r.points.map((pt) => <li>{pt}</li>)}</ul>
-                </div>
+        <h2 class="section-title section-title-sub">Education</h2>
+        <ol class="rows">
+          {schools.map((s) => (
+            <li class="row">
+              <p class="row-side">{s.period}</p>
+              <div class="row-main">
+                <h3>{s.name} <span class="row-title">{s.degree}</span></h3>
+                {s.note && <p>{s.note}</p>}
               </div>
-            ))}
-          </div>
-        </section>
-      </main>
+            </li>
+          ))}
+        </ol>
+      </section>
+    </main>
 
-      <footer>
-        <p>
-          {profile.location} · <a href={`mailto:${profile.email}`}>{profile.email}</a> ·
-          <a href="https://github.com/patsypppe"> GitHub</a> ·
-          <a href="https://www.linkedin.com/in/pranavpattanashetty"> LinkedIn</a>
-        </p>
-        <p>
-          Built with Astro and TypeScript. <a href="https://github.com/patsypppe/patsypppe.github.io">Source</a>.
-          Every figure here is traceable to a public repository; anything that is not reproducible from the code says so.
-        </p>
-      </footer>
-    </div>
+    <footer class="wrap">
+      <p class="footer-cta">
+        The quickest way to reach me is <a href={`mailto:${profile.email}`}>{profile.email}</a>.
+      </p>
+      <p class="footer-meta">
+        <a href="https://github.com/patsypppe">GitHub</a>
+        <span aria-hidden="true">·</span>
+        <a href="https://www.linkedin.com/in/pranavpattanashetty">LinkedIn</a>
+        <span aria-hidden="true">·</span>
+        Built with Astro and TypeScript, no client-side JavaScript.
+        <a href="https://github.com/patsypppe/patsypppe.github.io">Source</a>
+      </p>
+    </footer>
   </body>
 </html>
