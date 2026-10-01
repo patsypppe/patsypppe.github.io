@@ -150,7 +150,7 @@ const GRID_SIZES = '(min-width: 1180px) 548px, (min-width: 760px) calc(50vw - 40
               <p class="row-side">{r.period}{r.place && <><br />{r.place}</>}</p>
               <div class="row-main">
                 <h3>{r.org} <span class="row-title">{r.title}</span></h3>
-                <ul>{r.points.map((pt) => <li>{pt}</li>)}</ul>
+                {r.points.length > 0 && <ul>{r.points.map((pt) => <li>{pt}</li>)}</ul>}
               </div>
             </li>
           ))}

@@ -86,7 +86,7 @@ export const profile = {
   name: 'Pranav T Pattanashetty',
   role: 'Software engineer',
   lede: [
-    'I’m finishing an M.S. in Computer Science at Indiana University (May 2027). This summer I was a software development engineer intern at SparkFX, building agent workflows and multi-tenant Postgres for their Community Builder product.',
+    'I’m finishing an M.S. in Computer Science at Indiana University (May 2027). This summer I was a software development engineer intern at SparkFX.',
     'Outside class I build products end to end. Creuno is a sponsorship marketplace for creators, now in beta. AIGO is a serverless ride-hailing platform on AWS. I’ve also published three peer-reviewed papers in applied machine learning.',
   ],
   looking: 'Open to new-grad software, machine learning and cloud roles starting in 2027.',
@@ -304,11 +304,7 @@ export const roles: readonly Role[] = [
     title: 'Software Development Engineer Intern',
     place: 'Charlotte, NC',
     period: 'Jun – Aug 2026',
-    points: [
-      'Built the Community Builder dispatch backend: LangGraph and OpenAI agent workflows on Celery workers that classify, delegate, escalate and route resident issues, cutting staff time on manual dispatch 28%.',
-      'Took 20% off p95 page load across a 22-route Next.js front end with tenant-keyed Redis caching, TanStack Query deduplication and leaner Prisma queries.',
-      'Enforced tenant isolation with JWT-scoped Postgres row-level security (59 policies over 17 tables), tested with OWASP ZAP and adversarial SQL.',
-    ],
+    points: [],
   },
   {
     org: 'PROLIM Solutions',
