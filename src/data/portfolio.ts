@@ -310,21 +310,14 @@ export const roles: readonly Role[] = [
     org: 'PROLIM Solutions',
     title: 'Software Developer Intern',
     period: 'Jan – Apr 2025',
-    points: [
-      'Built Java and Spring Boot services with 7+ role-protected REST APIs for order, inventory and QC workflows, used daily by 20+ operators on three production lines.',
-      'Cut batch processing from 20–25 minutes to 8–10 by rewriting query plans, batching writes and indexing high-volume tables.',
-      'Shortened release rollout from five days to two with OpenAPI service contracts and JUnit tests in Jenkins CI.',
-    ],
+    points: [],
   },
   {
     org: 'LiRC Tek Solutions',
     title: 'Software Developer Intern',
     place: 'Bengaluru, India',
     period: 'Jun – Aug 2024',
-    points: [
-      'Built a PDF-to-TMS ingestion pipeline that writes 15+ fields per order, cutting manual review 80% and per-order handling time 45%.',
-      'Wrote the Python extraction service over AWS Textract and pdfplumber at 95% field accuracy, with per-field failure isolation.',
-    ],
+    points: [],
   },
 ]
 
