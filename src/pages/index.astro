@@ -1,16 +1,28 @@
 ---
 import '../styles/global.css'
 import Diagram from '../components/Diagram.astro'
+import Measure from '../components/Measure.astro'
 import Shot from '../components/Shot.astro'
-import { profile, products, tools, publications, roles, schools } from '../data/portfolio'
+import { profile, index, products, tools, publications, roles, schools } from '../data/portfolio'
 
 const title = `${profile.name}, software engineer`
 const description =
-  'M.S. Computer Science at Indiana University, graduating May 2027. Creuno, a creator sponsorship marketplace in beta; AIGO, serverless ride-hailing on AWS; open-source MCP and agent-evaluation tooling; three peer-reviewed papers.'
+  'Software engineer finishing an M.S. in Computer Science at Indiana University, May 2027. Creuno, a creator sponsorship marketplace in beta; AIGO, serverless ride-hailing on AWS; open-source tools for AI agents; three peer-reviewed papers.'
 const og = new URL('/og.png', Astro.site).href
 
-const HERO_SIZES = '(min-width: 1180px) 1120px, calc(100vw - 32px)'
-const GRID_SIZES = '(min-width: 1180px) 548px, (min-width: 760px) calc(50vw - 40px), calc(100vw - 32px)'
+const HERO_SIZES = '(min-width: 1240px) 1184px, calc(100vw - 40px)'
+const GRID_SIZES = '(min-width: 1240px) 584px, (min-width: 760px) calc(50vw - 36px), calc(100vw - 40px)'
+
+const person = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: profile.name,
+  jobTitle: 'Software Engineer',
+  url: Astro.site?.href,
+  email: `mailto:${profile.email}`,
+  alumniOf: schools.map((s) => ({ '@type': 'CollegeOrUniversity', name: s.name })),
+  sameAs: ['https://github.com/patsypppe', 'https://www.linkedin.com/in/pranavpattanashetty'],
+}
 ---
 
 <!doctype html>
@@ -19,40 +31,57 @@ const GRID_SIZES = '(min-width: 1180px) 548px, (min-width: 760px) calc(50vw - 40
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light" />
-    <meta name="theme-color" content="#f8f6f1" />
+    <meta name="theme-color" content="#f3f5f2" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={Astro.site?.href} />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content="profile" />
     <meta property="og:title" content={profile.name} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={og} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={og} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="preload" href="/fonts/newsreader-opsz.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/schibsted-grotesk-wght.woff2" as="font" type="font/woff2" crossorigin />
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(person)} />
   </head>
 
   <body>
     <a class="skip" href="#work">Skip to the work</a>
 
-    <header class="intro wrap">
+    <header class="masthead wrap">
       <nav class="topnav" aria-label="Sections">
-        <a href="#work">Work</a>
+        <a href="#work">Products</a>
         <a href="#open-source">Open source</a>
         <a href="#research">Research</a>
         <a href="#experience">Experience</a>
+        <a class="topnav-mail" href={`mailto:${profile.email}`}>Email me</a>
       </nav>
 
       <h1>{profile.name}</h1>
-      <p class="role">{profile.role} <span aria-hidden="true">·</span> {profile.location}</p>
-      <div class="lede">
-        {profile.lede.map((para) => <p>{para}</p>)}
+      <div class="intro">
+        <div class="intro-main">
+          <p class="headline">{profile.headline}</p>
+          <p class="lede">{profile.lede}</p>
+          <p class="looking"><span class="dot" aria-hidden="true"></span>{profile.looking}</p>
+          <ul class="links" aria-label="Contact">
+            {profile.links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+          </ul>
+        </div>
+
+        <nav class="index" aria-label="Work on this page, with its headline result">
+          <ol>
+            {index.map((e) => (
+              <li>
+                <a href={e.href}>
+                  <span class="index-name">{e.name}</span>
+                  <span class="index-result">{e.result}</span>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </nav>
       </div>
-      <p class="looking"><span class="dot" aria-hidden="true"></span>{profile.looking}</p>
-      <ul class="links">
-        {profile.links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
-      </ul>
     </header>
 
     <main>
@@ -60,39 +89,31 @@ const GRID_SIZES = '(min-width: 1180px) 548px, (min-width: 760px) calc(50vw - 40
         <h2 id="work-h" class="section-title">Products</h2>
 
         {products.map((p, i) => (
-          <article class="product" id={p.id} aria-labelledby={`${p.id}-h`}>
-            <div class="product-head">
-              <div>
-                <h3 id={`${p.id}-h`}>
-                  {p.name}
-                  {p.status && <span class="status">{p.status}</span>}
-                </h3>
-                <p class="summary">{p.summary}</p>
-              </div>
-              {p.link && <a class="visit" href={p.link.href}>{p.link.label} <span aria-hidden="true">↗</span></a>}
-            </div>
+          <article class="project" id={p.id} aria-labelledby={`${p.id}-h`}>
+            <header class="project-head">
+              <h3 id={`${p.id}-h`}>{p.name}</h3>
+              {p.status && <p class="status">{p.status}</p>}
+              <p class="summary">{p.summary}</p>
+              <p class="project-links">{p.links.map((l) => <a href={l.href}>{l.label}</a>)}</p>
+            </header>
 
             <Shot shot={p.hero} sizes={HERO_SIZES} eager={i === 0} class="shot-hero" />
 
-            <div class="product-body">
+            <div class:list={['project-body', { 'has-measures': p.measures.length > 0 }]}>
               <div class="prose">
                 {p.body.map((para) => <p>{para}</p>)}
+                <p class="stack">Built with {p.stack.join(', ')}.</p>
               </div>
-              <dl class="facts">
-                {p.facts.map((f) => (
-                  <div>
-                    <dt>{f.label}</dt>
-                    <dd>{f.value}</dd>
-                  </div>
-                ))}
-              </dl>
+              {p.measures.length > 0 && (
+                <div class="measures">
+                  {p.measures.map((m) => <Measure measure={m} />)}
+                </div>
+              )}
             </div>
 
             <div class:list={['gallery', { 'gallery-2': p.gallery.length % 2 === 0 }]}>
               {p.gallery.map((s) => <Shot shot={s} sizes={GRID_SIZES} />)}
             </div>
-
-            <p class="stack"><span class="stack-label">Built with</span> {p.stack.join(' · ')}</p>
           </article>
         ))}
       </section>
@@ -101,27 +122,27 @@ const GRID_SIZES = '(min-width: 1180px) 548px, (min-width: 760px) calc(50vw - 40
         <h2 id="oss-h" class="section-title">Open source</h2>
 
         {tools.map((t) => (
-          <article class="tool" aria-labelledby={`${t.name}-h`}>
-            <div class="tool-text">
-              <h3 id={`${t.name}-h`}><a href={t.repo}>{t.name}</a></h3>
+          <article class="project tool" id={t.id} aria-labelledby={`${t.id}-h`}>
+            <header class="project-head">
+              <h3 id={`${t.id}-h`}>{t.name}</h3>
               <p class="summary">{t.summary}</p>
-              {t.body.map((para) => <p>{para}</p>)}
-              <ul class="checks">
-                {t.facts.map((f) => <li>{f}</li>)}
-              </ul>
-              <p class="stack"><span class="stack-label">Built with</span> {t.stack.join(' · ')}</p>
-              <p class="repo-link"><a href={t.repo}>github.com/patsypppe/{t.name}</a></p>
+              <p class="project-links"><a href={t.repo}>Code on GitHub</a></p>
+            </header>
+
+            <div class="project-body has-measures">
+              <div class="prose">
+                {t.body.map((para) => <p>{para}</p>)}
+                <p class="stack">Built with {t.stack.join(', ')}.</p>
+              </div>
+              <div class="measures">
+                {t.measures.map((m) => <Measure measure={m} />)}
+              </div>
             </div>
-            <div class="tool-side">
+
+            <details class="how">
+              <summary>See how {t.name} works</summary>
               <Diagram kind={t.diagram} />
-              {t.transcript && (
-                <details class="term">
-                  <summary>Console capture: {t.transcript.title}</summary>
-                  <pre>{t.transcript.lines.join('\n')}</pre>
-                  <p class="term-note">{t.transcript.note}</p>
-                </details>
-              )}
-            </div>
+            </details>
           </article>
         ))}
       </section>
@@ -134,7 +155,7 @@ const GRID_SIZES = '(min-width: 1180px) 548px, (min-width: 760px) calc(50vw - 40
               <p class="row-side">{pub.venue}</p>
               <div class="row-main">
                 <h3>{pub.title}</h3>
-                <p>{pub.method}</p>
+                <p>{pub.finding}</p>
                 {pub.repo && <p class="row-link"><a href={pub.repo}>Code</a></p>}
               </div>
             </li>
@@ -143,45 +164,48 @@ const GRID_SIZES = '(min-width: 1180px) 548px, (min-width: 760px) calc(50vw - 40
       </section>
 
       <section id="experience" class="section wrap" aria-labelledby="exp-h">
-        <h2 id="exp-h" class="section-title">Experience</h2>
-        <ol class="rows">
-          {roles.map((r) => (
-            <li class="row">
-              <p class="row-side">{r.period}{r.place && <><br />{r.place}</>}</p>
-              <div class="row-main">
-                <h3>{r.org} <span class="row-title">{r.title}</span></h3>
-                {r.points.length > 0 && <ul>{r.points.map((pt) => <li>{pt}</li>)}</ul>}
-              </div>
-            </li>
-          ))}
-        </ol>
-
-        <h2 class="section-title section-title-sub">Education</h2>
-        <ol class="rows">
-          {schools.map((s) => (
-            <li class="row">
-              <p class="row-side">{s.period}</p>
-              <div class="row-main">
-                <h3>{s.name} <span class="row-title">{s.degree}</span></h3>
-                {s.note && <p>{s.note}</p>}
-              </div>
-            </li>
-          ))}
-        </ol>
+        <div class="split">
+          <div>
+            <h2 id="exp-h" class="section-title">Experience</h2>
+            <ol class="rows rows-tight">
+              {roles.map((r) => (
+                <li class="row">
+                  <p class="row-side">{r.period}{r.place && <><br />{r.place}</>}</p>
+                  <div class="row-main">
+                    <h3>{r.org}</h3>
+                    <p>{r.title}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+          <div>
+            <h2 class="section-title">Education</h2>
+            <ol class="rows rows-tight">
+              {schools.map((s) => (
+                <li class="row">
+                  <p class="row-side">{s.period}</p>
+                  <div class="row-main">
+                    <h3>{s.name}</h3>
+                    <p>{s.degree}{s.note && <><br />{s.note}</>}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
       </section>
     </main>
 
-    <footer class="wrap">
+    <footer class="footer wrap">
       <p class="footer-cta">
-        The quickest way to reach me is <a href={`mailto:${profile.email}`}>{profile.email}</a>.
+        Hiring for 2027? Write to <a href={`mailto:${profile.email}`}>{profile.email}</a>.
       </p>
       <p class="footer-meta">
         <a href="https://github.com/patsypppe">GitHub</a>
-        <span aria-hidden="true">·</span>
         <a href="https://www.linkedin.com/in/pranavpattanashetty">LinkedIn</a>
-        <span aria-hidden="true">·</span>
-        Built with Astro and TypeScript, no client-side JavaScript.
-        <a href="https://github.com/patsypppe/patsypppe.github.io">Source</a>
+        <a href="https://github.com/patsypppe/patsypppe.github.io">Source for this site</a>
+        <span>Static Astro and TypeScript, no client-side JavaScript.</span>
       </p>
     </footer>
   </body>

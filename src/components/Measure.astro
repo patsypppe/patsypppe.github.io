@@ -1,0 +1,29 @@
+---
+import type { Measure } from '../data/portfolio'
+
+interface Props {
+  measure: Measure
+}
+
+const { measure } = Astro.props
+
+// Bars are drawn as a fraction of the measurement's own scale, clamped so a
+// typo in the data can never draw past the track.
+const frac = (v: number) => Math.max(0, Math.min(1, v / measure.scale)).toFixed(4)
+---
+
+<figure class="measure">
+  <figcaption class="measure-title">{measure.title}</figcaption>
+  <dl class="bars">
+    {measure.bars.map((b) => (
+      <div class:list={['bar-row', { 'is-result': b.result }]}>
+        <dt>{b.label}</dt>
+        <dd>
+          <span class="track" aria-hidden="true"><span class="fill" style={`--v:${frac(b.value)}`}></span></span>
+          <span class="bar-value">{b.shown}</span>
+        </dd>
+      </div>
+    ))}
+  </dl>
+  <p class="measure-note">{measure.note}</p>
+</figure>

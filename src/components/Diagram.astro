@@ -14,7 +14,7 @@ const captions: Record<Props['kind'], string> = {
 
 <figure class="diagram">
   {kind === 'sentinel' && (
-    <svg viewBox="0 0 760 400" role="img" aria-label="Sentinel architecture. The sentinel harness sends probes over HTTP to any MCP endpoint and receives responses. From those responses it can settle twenty-five MUST rules and four SHOULD rules, producing pass, fail or not-applicable verdicts. Below a dashed line marked 'not observable from outside' sit five MUST requirements: token audience validated, no token passthrough, handle possession is not authentication, MRTR retries are idempotent, and invocations are audited. The harness marks these INDETERMINATE and excludes them from the gate. The Go broker implements all five and proves each with a named test that has host-side access.">
+    <svg viewBox="0 0 760 400" role="img" aria-label="Sentinel architecture. The sentinel harness sends probes over HTTP to any MCP endpoint and receives responses. From those responses it settles most MUST and SHOULD rules, producing pass, fail or not-applicable verdicts. Below a dashed line marked 'not observable from outside' sit five MUST requirements: token audience validated, no token passthrough, handle possession is not authentication, MRTR retries are idempotent, and invocations are audited. The harness marks these INDETERMINATE and excludes them from the gate. The Go broker implements all five and proves each with a named test that has host-side access.">
       <defs>
         <marker id="ar-s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
           <path d="M0 0 L10 5 L0 10 z" class="d-fill-line" />
@@ -23,7 +23,7 @@ const captions: Record<Props['kind'], string> = {
 
       <rect x="16" y="24" width="200" height="86" rx="8" class="d-box d-accent" />
       <text x="116" y="56" text-anchor="middle" class="d-title">sentinel harness</text>
-      <text x="116" y="78" text-anchor="middle" class="d-sub">Python · no server internals</text>
+      <text x="116" y="78" text-anchor="middle" class="d-sub">Python, no server internals</text>
       <text x="116" y="96" text-anchor="middle" class="d-sub">runs against any URL</text>
 
       <rect x="544" y="24" width="200" height="86" rx="8" class="d-box" />
@@ -32,19 +32,19 @@ const captions: Record<Props['kind'], string> = {
       <text x="644" y="96" text-anchor="middle" class="d-sub">else's unmigrated server</text>
 
       <line x1="222" y1="55" x2="536" y2="55" class="d-line" marker-end="url(#ar-s)" />
-      <text x="379" y="46" text-anchor="middle" class="d-edge">probe · Mcp-Method / Mcp-Name</text>
+      <text x="379" y="46" text-anchor="middle" class="d-edge">probe with Mcp-Method and Mcp-Name</text>
       <line x1="536" y1="88" x2="222" y2="88" class="d-line" marker-end="url(#ar-s)" />
       <text x="379" y="106" text-anchor="middle" class="d-edge">response</text>
 
       <rect x="16" y="140" width="728" height="66" rx="8" class="d-box d-soft" />
       <text x="36" y="166" class="d-title">settled from outside</text>
-      <text x="36" y="190" class="d-sub">25 MUST · 4 SHOULD → PASS / FAIL / N-A, each with a specification citation</text>
+      <text x="36" y="190" class="d-sub">MUST and SHOULD rules → PASS / FAIL / N-A, each with a specification citation</text>
 
       <line x1="16" y1="232" x2="744" y2="232" class="d-cut" />
       <text x="744" y="224" text-anchor="end" class="d-cutlabel">not observable from outside</text>
 
       <rect x="16" y="248" width="344" height="136" rx="8" class="d-box d-warn" />
-      <text x="36" y="274" class="d-title">INDETERMINATE · 5 MUST</text>
+      <text x="36" y="274" class="d-title">INDETERMINATE: 5 MUST</text>
       <text x="36" y="296" class="d-mono">token-audience-validated</text>
       <text x="36" y="314" class="d-mono">no-token-passthrough</text>
       <text x="36" y="332" class="d-mono">handle-possession-is-not-auth</text>
