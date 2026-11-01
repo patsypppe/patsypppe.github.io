@@ -117,8 +117,8 @@ export const profile = {
 export const index: readonly IndexEntry[] = [
   { href: '#creuno', name: 'Creuno', result: 'Sponsorship marketplace, in beta with 30 users' },
   { href: '#aigo', name: 'AIGO', result: 'Finds nearby drivers reading 95% less data' },
-  { href: '#sentinel', name: 'Sentinel', result: 'Catches 89% of 124 generated protocol bugs' },
-  { href: '#meridian', name: 'Meridian', result: 'Zero false alarms across 30 runs' },
+  { href: '#sentinel', name: 'Sentinel', result: 'Graded all 15,451 servers in the official MCP registry' },
+  { href: '#meridian', name: 'Meridian', result: 'Imports 66 of 89 Terminal-Bench 2.0 tasks' },
   { href: '#research', name: 'Research', result: 'Three peer-reviewed papers in applied ML' },
 ]
 
@@ -240,15 +240,21 @@ export const tools: readonly Tool[] = [
     repo: 'https://github.com/patsypppe/sentinel',
     summary: 'Checks whether a server that AI agents call for tools actually follows the protocol spec.',
     body: [
-      'AI agents reach tools through MCP servers, and the July 2026 revision of the protocol made every older server non-conformant in ways nobody had listed. Sentinel scans any server from the outside and grades it rule by rule, with the spec clause attached to each finding, then fails the CI build on a violation.',
-      'It ships with its own Go server built to the new revision. A retried tool call replays the recorded result instead of running the action twice, and every call lands in a tamper-evident audit log.',
+      'AI agents reach tools through MCP servers, and the July 2026 revision of the protocol made every older server non-conformant in ways nobody had listed. Sentinel scans any server from the outside, grades it against a catalog of 68 rules with the spec clause attached to each finding, and fails the CI build on a violation. A separate lint reads a server’s tool descriptions the way a model does, flagging undocumented parameters and hidden instructions.',
+      'It ships with its own Go server built to the new revision: a retried tool call replays the recorded result instead of running the action twice, and every call lands in an audit log. Against deliberately broken servers it catches every violation it has a rule for, and it says “can’t tell” where it can’t instead of guessing.',
+      'It also corrects itself in the open. The first scan of the registry reported 13 of 2,263 servers passing; reading what the failing servers actually answered showed two false-positive classes, and the numbers here are from the rerun.',
     ],
     measures: [
       {
-        title: 'Generated protocol bugs the checker catches',
-        scale: 124,
-        bars: [{ label: 'Caught', value: 110, shown: '110 of 124', result: true }],
-        note: 'And zero false alarms against a correctly built server.',
+        title: 'Every remote server in the official MCP registry, by protocol revision',
+        scale: 15451,
+        bars: [
+          { label: 'On the new revision', value: 2263, shown: '2,263 (14.6%)', result: true },
+          { label: 'Previous revision only', value: 5522, shown: '5,522 (35.7%)' },
+          { label: 'Need credentials first', value: 6044, shown: '6,044 (39.1%)' },
+          { label: 'Unreachable, or neither', value: 1622, shown: '1,622 (10.5%)' },
+        ],
+        note: 'Safe mode, one connection per host, GitHub Actions, October 2026. Of a 4,000-endpoint sample, 16% of servers on the new revision pass every required rule that can be checked from outside.',
       },
       {
         title: 'Tokens an agent spends reading a 100-row tool result',
@@ -260,7 +266,7 @@ export const tools: readonly Tool[] = [
         note: 'Measured by the same test that publishes the figure.',
       },
     ],
-    stack: ['Go', 'Python', 'Envoy', 'PostgreSQL', 'Docker Compose'],
+    stack: ['Go', 'Python', 'Envoy', 'PostgreSQL', 'OpenTelemetry', 'Docker Compose', 'GitHub Actions'],
     diagram: 'sentinel',
   },
   {
@@ -269,22 +275,32 @@ export const tools: readonly Tool[] = [
     repo: 'https://github.com/patsypppe/meridian',
     summary: 'A CI gate that tells a real AI-agent regression from random variation.',
     body: [
-      'Agents are non-deterministic, so one failed run proves little. Meridian runs each task several times against LangGraph agents, scores pass^k and only blocks a merge when the drop clears both a tolerance and a significance test.',
-      'Every model call goes through a recording proxy, so a rerun replays the saved responses exactly at zero API cost, and token and dollar budgets are enforced where the agent cannot raise them. Each trial runs in its own locked-down container with no network and no secrets.',
+      'Agents are non-deterministic, so one failed run proves little. Meridian runs each task several times, scores pass^k and only blocks a merge when the drop clears both a tolerance and a significance test. Each trial runs in its own locked-down container with no network and no secrets, and the answer is graded from outside the container.',
+      'Every model call goes through a proxy that records and replays responses and keeps the API key away from the agent. It works with Claude or with open models, and it learned the hard way that a provider’s rate limit must not be scored as the agent failing: those trials are now tagged with a cause, excluded and retried.',
+      'It reads the task format used by Harbor, so established benchmarks can run on it, graded by their own hidden tests in a sandbox with no network. A React and TypeScript dashboard shows the results. No benchmark score is claimed yet: a Terminal-Bench slice has not been run.',
     ],
     measures: [
       {
-        title: 'The gate, tested against itself',
+        title: 'Terminal-Bench 2.0 tasks Meridian can import',
+        scale: 89,
+        bars: [
+          { label: 'Imported', value: 66, shown: '66 of 89', result: true },
+          { label: 'Refused, verifier installs packages at test time', value: 23, shown: '23 of 89' },
+        ],
+        note: 'Tasks Meridian cannot run faithfully are refused with the reason, not converted into something that runs under different rules.',
+      },
+      {
+        title: 'The gate’s statistics, tested on a simulated model',
         scale: 1,
         bars: [
           { label: 'False alarms on an unchanged agent', value: 0, shown: '0 of 30' },
           { label: 'Planted regressions caught', value: 0.8, shown: '4 of 5', result: true },
           { label: 'Archived runs replayed exactly', value: 1, shown: '5 of 5', result: true },
         ],
-        note: 'Raw results are committed as benchmarks/self-eval.json, including the one miss and why.',
+        note: 'A deterministic stand-in for the model, not a live LLM, so this tests the statistics rather than a real agent. Raw results are committed as benchmarks/self-eval.json, including the one miss and why.',
       },
     ],
-    stack: ['Python', 'LangGraph', 'Docker', 'PostgreSQL', 'pytest'],
+    stack: ['Python', 'LangGraph', 'Docker', 'PostgreSQL', 'TypeScript', 'React', 'GitHub Actions'],
     diagram: 'meridian',
   },
 ]
