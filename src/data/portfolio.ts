@@ -240,7 +240,7 @@ export const tools: readonly Tool[] = [
     repo: 'https://github.com/patsypppe/sentinel',
     summary: 'Checks whether a server that AI agents call for tools actually follows the protocol spec.',
     body: [
-      'AI agents reach tools through MCP servers, and the July 2026 revision of the protocol made every older server non-conformant in ways nobody had listed. Sentinel scans any server from the outside, grades it against a catalog of 68 rules with the spec clause attached to each finding, and fails the CI build on a violation. A separate lint reads a server’s tool descriptions the way a model does, flagging undocumented parameters and hidden instructions.',
+      'AI agents reach tools through MCP servers, and the July 2026 revision of the protocol made every older server non-conformant in ways nobody had listed. Sentinel scans any server from the outside, grades it against a catalog of 68 rules (50 from the spec itself) with the spec clause attached to each finding, and fails the CI build on a violation. A separate lint reads a server’s tool descriptions the way a model does, flagging undocumented parameters and hidden instructions.',
       'It ships with its own Go server built to the new revision: a retried tool call replays the recorded result instead of running the action twice, and every call lands in an audit log. Against deliberately broken servers it catches every violation it has a rule for, and it says “can’t tell” where it can’t instead of guessing.',
       'It also corrects itself in the open. The first scan of the registry reported 13 of 2,263 servers passing; reading what the failing servers actually answered showed two false-positive classes, and the numbers here are from the rerun.',
     ],
